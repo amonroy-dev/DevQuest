@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  player       Player?
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Player {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName  String
+  totalXp      Int                 @default(0)
+  level        Int                 @default(1)
+  rank         String              @default("vibe_coder")
+  streakCount  Int                 @default(0)
+  lastPlayedOn DateTime?
+  createdAt    DateTime            @default(now())
+  character    Character?
+  skills       PlayerSkill[]
+  attempts     Attempt[]
+  progress     Progress[]
+  achievements PlayerAchievement[]
+}
+
+model Character {
+  id         String @id @default(cuid())
+  playerId   String @unique
+  player     Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  archetype  String
+  palette    String
+  silhouette String
+  collar     String
+  accent     String
+}
+
+model Skill {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  name         String
+  description  String
+  displayOrder Int
+  challenges   ChallengeSkill[]
+  players      PlayerSkill[]
+}
+
+model World {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  title   String
+  summary String
+  order   Int
+  status  String
+  levels  Level[]
+}
+
+model Level {
+  id           String      @id @default(cuid())
+  worldId      String
+  world        World       @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  slug         String      @unique
+  title        String
+  summary      String
+  concept      String
+  whyItMatters String
+  order        Int
+  challenges   Challenge[]
+
+  @@index([worldId])
+}
+
+model Challenge {
+  id           String           @id @default(cuid())
+  levelId      String
+  level        Level            @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  slug         String           @unique
+  title        String
+  type         String
+  difficulty   String
+  prompt       String
+  scenario     String
+  whyItMatters String
+  definition   Json
+  rubric       Json
+  xpBase       Int
+  published    Boolean          @default(true)
+  skills       ChallengeSkill[]
+  attempts     Attempt[]
+  progress     Progress[]
+
+  @@index([levelId])
+}
+
+model ChallengeSkill {
+  challengeId String
+  skillId     String
+  weight      Float
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([challengeId, skillId])
+}
+
+model PlayerSkill {
+  playerId String
+  skillId  String
+  xp       Int    @default(0)
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, skillId])
+}
+
+model Attempt {
+  id          String    @id @default(cuid())
+  playerId    String
+  challengeId String
+  player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  answer      Json
+  score       Json
+  passed      Boolean
+  createdAt   DateTime  @default(now())
+
+  @@index([playerId, challengeId])
+}
+
+model Progress {
+  id           String    @id @default(cuid())
+  playerId     String
+  challengeId  String
+  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  challenge    Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  status       String
+  bestScore    Int       @default(0)
+  attemptCount Int       @default(0)
+  xpAwarded    Int       @default(0)
+  masteredAt   DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([playerId, challengeId])
+}
+
+model Achievement {
+  id          String              @id @default(cuid())
+  slug        String              @unique
+  name        String
+  description String
+  unlockRule  Json
+  players     PlayerAchievement[]
+}
+
+model PlayerAchievement {
+  playerId      String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  player        Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@id([playerId, achievementId])
+}
