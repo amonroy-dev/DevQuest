@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0e1116;
+  --raise: #171c24;
+  --sunken: #0a0d11;
+  --line: #2c3644;
+  --ink: #e8edf3;
+  --muted: #93a0b0;
+  --amber: #e2b15a;
+  --blue: #8eb7e8;
+  --green: #6dccaa;
+  --rose: #e7a0ab;
+  --danger: #e07a84;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raise: var(--raise);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-amber: var(--amber);
+  --color-blue: var(--blue);
+  --color-green: var(--green);
+  --color-rose: var(--rose);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background:
+    radial-gradient(900px 420px at 0% -10%, rgba(226, 177, 90, 0.08), transparent 55%),
+    radial-gradient(700px 380px at 100% 0%, rgba(142, 183, 232, 0.06), transparent 50%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(226, 177, 90, 0.35);
+}
